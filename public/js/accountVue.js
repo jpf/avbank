@@ -1,11 +1,14 @@
-
+// [jpf] FIXME: Move this into AVBank.js
+// 
+// exampleModal1 is the first modal "Do you want to take out money"
+// Where the withdraw form comes from
 var reEnroll = function() {
   $("#exampleModal1").modal("show")
 }
 
 var resetMfa = function() {
   $.ajax({
-    url:'http://localhost:3000/resetMfa',
+    url:'/resetMfa',
     type:'post',
     success:function(){
 
@@ -16,11 +19,12 @@ var resetMfa = function() {
 var showActions = function(account) {
   var span = $(account).children()[0]
   var id = $(span).text()
-  $('input[name=id]').val(id);
+  console.log(id)
+  $('#bankAccount').val(id);
   $('#withdrawForm').submit(function(e){
     e.preventDefault();
     $.ajax({
-      url:'http://localhost:3000/factorsTest',
+      url:'/factorsTest',
       type:'post',
       success:function(){
         var formData = $('#withdrawForm').serialize()
@@ -31,13 +35,14 @@ var showActions = function(account) {
         formData["Withdrawal"] = amountData
         console.log(formData)
         $('#mfaModal').modal('show');
-        $('#modalForm').submit(function(e){
+        $('#smsMfaModal').submit(function(e){
           e.preventDefault();
           $.ajax({
-            url:'http://localhost:3000/factorsTest',
+            url:'/factorsTest',
             type:'post',
-            data:$('#modalForm, #withdrawForm').serialize(),
-            success:function(){
+            data:$('#smsMfaModal, #withdrawForm').serialize(),
+            success:function(data){
+              console.log(data)
               window.location.reload()
             }
           });
@@ -54,7 +59,8 @@ Vue.component('account-item', {
   props: {
     account: Object
   },
-  template: "<div class='col-lg-4 col-sm-6'><div class='card'><div class='card-block block-1'><h3 class='card-title'>{{account.title}}<span>| {{account.balance}}</span></h3><button type='button' class='btn btn-danger ml-lg-5 w3ls-btn' onclick='showActions(this)' data-toggle='modal' aria-pressed='false' data-target='#testModal'>Do Actions <span style='display: none;'>{{account._id}}</span></button></div></div></div><br><br>"
+  // FIXME: Move this HTML into the template and use a Vue loop to iterate over it.
+  template: "<div class='col-lg-4 col-sm-6'><div class='card'><div class='card-block block-1'><h3 class='card-title'>{{account.title}}: <span class='money'>{{account.balance}}</span></h3><button type='button' class='btn btn-danger ml-lg-5 w3ls-btn' onclick='showActions(this)' data-toggle='modal' aria-pressed='false' data-target='#testModal'>Do Actions <span style='display: none;'>{{account._id}}</span></button></div></div></div><br><br>"
 })
 
 new Vue({
@@ -96,8 +102,7 @@ new Vue({
   ,
   methods: {
     loadFactors: function() {
-      console.log("test")
-      this.$http.get('http://localhost:3000/factors')
+      this.$http.get('https://avbank.glitch.me/factors')
       .then(response => {
         this.factors = response.body
         $(".button-primary").css("background", "linear-gradient(red, #f00000)");
@@ -106,7 +111,7 @@ new Vue({
     },
     postFactors: function() {
       console.log("test")
-      this.$http.post('http://localhost:3000/factorsTest').then(response => {
+      this.$http.post('https://avbank.glitch.me/factorsTest').then(response => {
         console.log(response.body)
       })
     }
@@ -128,7 +133,7 @@ new Vue({
       {el: '#okta'},
       function success(res) {
         console.log(res)
-        window.location.reload()
+       window.location.reload()
       },
       function error(err) {
         console.log(err)
